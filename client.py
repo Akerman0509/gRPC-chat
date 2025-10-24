@@ -140,7 +140,35 @@ class ChatClient:
         else:
             print("❌ Tạo nhóm thất bại:", resp.message)
     
+    def get_groups( self):
+        resp = self.stub.GetGroups(chat_pb2.GetGroupsRequest())
+        if resp.groups == []:
+            print("📭 Hiện không có nhóm nào trong hệ thống.")
+            return
+        for g in resp.groups:
+            formatted = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(g.created_at))
+            members_num = len(g.member_ids)
+            print(f" - {g.group_name} (ID: {g.group_id}) (Created by: {g.creator_id}) (Members: {members_num}) (Created at: {formatted})")
+            
+    def get_user_groups(self):
+        resp = self.stub.GetUserGroups(chat_pb2.GetUserGroupsRequest(user_id=self.user_id))
+        if not resp.groups:
+            print("📭 Bạn chưa tham gia nhóm nào.")
+        else:
+            print("📂 Danh sách nhóm bạn đã tham gia:")
+            for g in resp.groups:
+                members_num = len(g.member_ids)
+                print(f" - {g.group_name} (ID: {g.group_id}) (Created by: {g.creator_id}) (Members: {members_num})")
 
+    def get_group_members(self, group_id):
+        resp = self.stub.GetGroupMembers(chat_pb2.GetGroupMembersRequest(group_id=group_id))
+        if not resp.members:
+            print("❌ Nhóm không có thành viên nào.")
+        else:
+            print(f"👥 Thành viên nhóm với gid: {group_id}:")
+            for m in resp.members:
+                print (f" - {m.username} (ID: {m.user_id}) [{m.status}]")
+        
     # -------------------------------
     # Tham gia nhóm
     # -------------------------------
@@ -160,24 +188,9 @@ class ChatClient:
 
 
 
-    # -------------------------------
-    # Lấy danh sách nhóm của user
-    # -------------------------------
-    def list_groups(self):
-        resp = self.stub.GetUserGroups(chat_pb2.GetUserGroupsRequest(user_id=self.user_id))
-        if not resp.groups:
-            print("📭 Bạn chưa tham gia nhóm nào.")
-        else:
-            print("📂 Danh sách nhóm:")
-            for g in resp.groups:
-                print(f" - {g.group_name} (ID: {g.group_id})")
 
 
 
-
-# -------------------------------
-# GIAO DIỆN CLI ĐƠN GIẢN
-# -------------------------------
 def main():
     print("=" * 50)
     print("💬 CHAT CLIENT (gRPC)")
@@ -213,7 +226,10 @@ def main():
     print(" /msg <user_id> <nội dung>  → Gửi tin nhắn riêng")
     print(" /group <tên> <id1,id2,...> → Tạo nhóm")
     print(" /join <group_id>           → Tham gia nhóm")
-    print(" /groups                    → Xem nhóm")
+    print(" /groups                    → Xem tất cả nhóm")
+    print(" /sgroup                    → Xem nhóm của bạn")
+    print(" /gmem <group_id>           → Xem thành viên nhóm")
+    
     print(" /gmsg <group_id> <nội dung>→ Gửi tin nhóm")
     print(" /exit                      → Thoát")  
     
@@ -251,7 +267,14 @@ def main():
                 client.join_group(gid)
 
             elif cmd == "/groups":
-                client.list_groups()
+                client.get_groups()
+                
+            elif cmd == "/sgroups":
+                client.get_user_groups()
+            
+            elif cmd.startswith("/gmem "):
+                _, gid = cmd.split(" ", 1)
+                client.get_group_members(gid)
 
             elif cmd.startswith("/gmsg "):
                 try:

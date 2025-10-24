@@ -90,6 +90,11 @@ class ChatServiceStub(object):
                 request_serializer=chat__pb2.ListUsersRequest.SerializeToString,
                 response_deserializer=chat__pb2.ListUsersResponse.FromString,
                 _registered_method=True)
+        self.GetGroups = channel.unary_unary(
+                '/chat.ChatService/GetGroups',
+                request_serializer=chat__pb2.GetGroupsRequest.SerializeToString,
+                response_deserializer=chat__pb2.GetGroupsResponse.FromString,
+                _registered_method=True)
 
 
 class ChatServiceServicer(object):
@@ -173,6 +178,13 @@ class ChatServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetGroups(self, request, context):
+        """get all groups
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ChatServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -230,6 +242,11 @@ def add_ChatServiceServicer_to_server(servicer, server):
                     servicer.ListUsers,
                     request_deserializer=chat__pb2.ListUsersRequest.FromString,
                     response_serializer=chat__pb2.ListUsersResponse.SerializeToString,
+            ),
+            'GetGroups': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetGroups,
+                    request_deserializer=chat__pb2.GetGroupsRequest.FromString,
+                    response_serializer=chat__pb2.GetGroupsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -530,6 +547,33 @@ class ChatService(object):
             '/chat.ChatService/ListUsers',
             chat__pb2.ListUsersRequest.SerializeToString,
             chat__pb2.ListUsersResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetGroups(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/chat.ChatService/GetGroups',
+            chat__pb2.GetGroupsRequest.SerializeToString,
+            chat__pb2.GetGroupsResponse.FromString,
             options,
             channel_credentials,
             insecure,
