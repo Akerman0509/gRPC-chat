@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package chat;
+
+// Service định nghĩa các RPC methods
+service ChatService {
+  // Đăng ký user mới
+  rpc RegisterUser(RegisterRequest) returns (RegisterResponse);
+  // Login
+  rpc LoginUser(LoginRequest) returns (LoginResponse);
+  
+  // Tìm kiếm user khác
+  rpc SearchUser(SearchRequest) returns (SearchResponse);
+  
+  // Tạo nhóm chat
+  rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+  
+  // Tham gia nhóm chat
+  rpc JoinGroup(JoinGroupRequest) returns (JoinGroupResponse);
+  
+  // Gửi tin nhắn trong nhóm
+  rpc SendGroupMessage(GroupMessageRequest) returns (MessageResponse);
+  
+  // Gửi tin nhắn riêng
+  rpc SendPrivateMessage(PrivateMessageRequest) returns (MessageResponse);
+  
+  // Stream nhận tin nhắn (bidirectional streaming)
+  rpc MessageStream(stream MessageStreamRequest) returns (stream MessageStreamResponse);
+  
+  // Lấy danh sách nhóm của user
+  rpc GetUserGroups(GetUserGroupsRequest) returns (GetUserGroupsResponse);
+  
+  // Lấy danh sách thành viên trong nhóm
+  rpc GetGroupMembers(GetGroupMembersRequest) returns (GetGroupMembersResponse);
+
+  // list user
+  rpc ListUsers (ListUsersRequest) returns (ListUsersResponse);
+  // get all groups
+  rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse);
+
+}
+
+
+//------------------------------------------------
+
+
+
+
+
+//------------------------------------------------
+
+
+
+//------------------LOGIN, CHECK PASS, REGISTER------------------------------
+// Message types
+message User {
+  string user_id = 1;
+  string username = 2;
+  string status = 3; // online, offline
+  string password = 4;
+  
+}
+
+// Requested messages
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+message LoginResponse {
+  bool success = 1;
+  string user_id = 2;
+  string message = 3;
+}
+
+// Request/Response messages
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string user_id = 2;
+  string message = 3;
+}
+
+message ListUsersRequest {
+  string username = 1;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+}
+
+//-----------------------MESSAGE, STREAM-------------------------
+message ChatMessage {
+  string message_id = 1;
+  string sender_id = 2;
+  string sender_name = 3;
+  string content = 4;
+  int64 timestamp = 5;
+  string message_type = 6; // "group" or "private"
+  string target_id = 7; // group_id hoặc user_id
+}
+
+message PrivateMessageRequest {
+  string sender_id = 1;
+  string receiver_id = 2;
+  string content = 3;
+}
+
+message MessageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message MessageStreamRequest {
+  string user_id = 1;
+  string action = 2; // "connect", "disconnect"
+}
+
+message MessageStreamResponse {
+  ChatMessage message = 1;
+}
+
+//------------------------GROUP---------------------------------------
+message Group {
+  string group_id = 1;
+  string group_name = 2;
+  string creator_id = 3;
+  repeated string member_ids = 4;
+  int64 created_at = 5;
+}
+
+message CreateGroupRequest {
+  string creator_id = 1;
+  string group_name = 2;
+  repeated string member_ids = 3;
+}
+
+message CreateGroupResponse {
+  bool success = 1;
+  string group_id = 2;
+  string message = 3;
+}
+
+message JoinGroupRequest {
+  string user_id = 1;
+  string group_id = 2;
+}
+
+message JoinGroupResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GroupMessageRequest {
+  string sender_id = 1;
+  string group_id = 2;
+  string content = 3;
+}
+
+//------------------------SEARCH, GET---------------------------------------
+
+
+message SearchRequest {
+  string query = 1;
+  string requester_id = 2;
+}
+
+message SearchResponse {
+  repeated User users = 1;
+}
+
+message GetGroupsRequest{
+
+}
+message GetGroupsResponse{
+  repeated Group groups =1;
+}
+
+
+message GetUserGroupsRequest {
+  string user_id = 1;
+}
+
+message GetUserGroupsResponse {
+  repeated Group groups = 1;
+}
+
+message GetGroupMembersRequest {
+  string group_id = 1;
+}
+
+message GetGroupMembersResponse {
+  repeated User members = 1;
+}
