@@ -20,7 +20,7 @@ import chat_pb2_grpc
 users = {}  # user_id -> {"username": ..., "password":....,  "status": ..., "stream": ...}
 groups = {}  # group_id -> {"group_name": ..., "creator_id": ..., "member_ids": [...], "created_at": ...}
 messages = []  # Danh sách tất cả tin nhắn gửi trong hệ thống (tuỳ chọn)
-
+delimiter = "============== History ================"
 lock = threading.Lock()
 
 
@@ -33,6 +33,20 @@ def checkUserExist(username):
             return True
     return False
 
+def append_to_file(filename, content):
+    with open(filename, "a", encoding="utf-8") as f:
+        timestamp = time.strftime('%H:%M:%S', time.localtime(content.timestamp))
+        f.write(f"[{timestamp}] {content.sender_name} : {content.content}\n")
+        
+def read_from_file(filename, num_lines = 5):
+    with open(filename, "r", encoding="utf-8") as f:
+        all_lines = [line.strip() for line in f.readlines()]
+        delimiter_index = all_lines.index(delimiter)
+        history_line = all_lines[delimiter_index + 1:]
+        # Lấy num_lines dòng cuối cùng
+        if len(history_line) >= num_lines:
+            return history_line[-num_lines:]
+        return history_line
 
     
 class ChatService(chat_pb2_grpc.ChatServiceServicer):
@@ -74,15 +88,15 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         print(f"👥 Có {len(user_list)} người dùng trong hệ thống.")
         return chat_pb2.ListUsersResponse(users=user_list)
 
-    # def SearchUser(self, request, context):
-    #     query = request.query.lower()
-    #     matched_users = [
-    #         chat_pb2.User(user_id=uid, username=u["username"], status=u["status"])
-    #         for uid, u in users.items()
-    #         if query in u["username"].lower() and uid != request.requester_id
-    #     ]
-    #     print(f"🔍 {request.requester_id} tìm: '{request.query}', thấy {len(matched_users)} kết quả")
-    #     return chat_pb2.SearchResponse(users=matched_users)
+    def SearchUser(self, request, context):
+        query = request.query.lower()
+        matched_users = [
+            chat_pb2.User(user_id=uid, username=u["username"], status=u["status"])
+            for uid, u in users.items()
+            if query in u["username"].lower() and uid != request.requester_id
+        ]
+        print(f"🔍 {request.requester_id} tìm: '{request.query}', thấy {len(matched_users)} kết quả")
+        return chat_pb2.SearchResponse(users=matched_users)
     
     def SendPrivateMessage(self, request, context):
         if request.receiver_id not in users:
@@ -130,8 +144,18 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                 "member_ids": list(set(request.member_ids) | {request.creator_id}),
                 "created_at": int(time.time())
             }
-        print(f"👥 Nhóm mới: {request.group_name} (id={group_id})")
+        print(f"👥 Nhóm mới: {request.group_name} (id={group_id}), (creator_id: {request.creator_id}")
+        # create txt file with gid name
+        with open(f"{group_id}.txt", "w", encoding="utf-8") as f:
+            f.write(f"Group ID: {group_id}\n")
+            f.write(f"Group Name: {request.group_name}\n")
+            f.write(f"Creator ID: {request.creator_id}\n")
+            f.write(f"Member IDs: {', '.join(groups[group_id]['member_ids'])}\n")
+            f.write(f"Created At: {time.ctime(groups[group_id]['created_at'])}\n")
+            f.write(f"{delimiter}\n")
+        
         return chat_pb2.CreateGroupResponse(success=True, group_id=group_id, message="Tạo nhóm thành công")
+    
     
     def GetGroups ( self, request, context):
         group_list = [
@@ -147,40 +171,64 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         print(f"👥 Có {len(group_list)} nhóm trong hệ thống.")
         return chat_pb2.GetGroupsResponse(groups=group_list)
 
-    # def JoinGroup(self, request, context):
-    #     group = groups.get(request.group_id)
-    #     if not group:
-    #         return chat_pb2.JoinGroupResponse(success=False, message="Nhóm không tồn tại")
+    def JoinGroup(self, request, context):
+        group = groups.get(request.group_id)
+        if not group:
+            return chat_pb2.JoinGroupResponse(success=False, message="Nhóm không tồn tại")
 
-    #     with lock:
-    #         if request.user_id not in group["member_ids"]:
-    #             group["member_ids"].append(request.user_id)
-    #     print(f"✅ {request.user_id} tham gia nhóm {request.group_id}")
-    #     return chat_pb2.JoinGroupResponse(success=True, message="Tham gia nhóm thành công")
+        with lock:
+            if request.user_id not in group["member_ids"]:
+                group["member_ids"].append(request.user_id)
+        print(f"✅ {request.user_id} tham gia nhóm {request.group_id}")
+        return chat_pb2.JoinGroupResponse(success=True, message="Tham gia nhóm thành công")
+    
+    def LeaveGroup(self, request, context):
+        group = groups.get(request.group_id)
+        if not group:
+            return chat_pb2.LeaveGroupResponse(success=False, message="Nhóm không tồn tại")
 
-    # def SendGroupMessage(self, request, context):
-    #     if request.group_id not in groups:
-    #         return chat_pb2.MessageResponse(success=False, message="Nhóm không tồn tại")
+        with lock:
+            if request.user_id in group["member_ids"]:
+                group["member_ids"].remove(request.user_id)
+        print(f"❌ {request.user_id} rời nhóm {request.group_id}")
+        return chat_pb2.LeaveGroupResponse(success=True, message="Rời nhóm thành công")
 
-    #     msg = chat_pb2.ChatMessage(
-    #         message_id=f"msg_{len(messages) + 1}",
-    #         sender_id=request.sender_id,
-    #         sender_name=users[request.sender_id]["username"],
-    #         content=request.content,
-    #         timestamp=int(time.time()),
-    #         message_type="group",
-    #         target_id=request.group_id
-    #     )
-    #     messages.append(msg)
-    #     print(f"💬 Tin nhắn nhóm [{request.group_id}] từ {request.sender_id}: {request.content}")
+    def SendGroupMessage(self, request, context):
+        if request.group_id not in groups:
+            return chat_pb2.MessageResponse(success=False, message="Nhóm không tồn tại")
 
-    #     # Gửi tin nhắn cho các thành viên online
-    #     for uid in groups[request.group_id]["member_ids"]:
-    #         stream = users.get(uid, {}).get("stream")
-    #         if stream:
-    #             stream.put(msg)
+        msg = chat_pb2.ChatMessage(
+            message_id=f"msg_{len(messages) + 1}",
+            sender_id=request.sender_id,
+            sender_name=users[request.sender_id]["username"],
+            content=request.content,
+            timestamp=int(time.time()),
+            message_type="group",
+            target_id=request.group_id
+        )
+        messages.append(msg)
+        append_to_file(f"{request.group_id}.txt", msg)
+        
+        print(f"💬 Tin nhắn nhóm [{request.group_id}] từ {request.sender_id}: {request.content}")
 
-    #     return chat_pb2.MessageResponse(success=True, message="Đã gửi tin nhắn nhóm")
+        # Gửi tin nhắn cho các thành viên online
+        for uid in groups[request.group_id]["member_ids"]:
+            if uid == request.sender_id:
+                continue
+            stream = users.get(uid, {}).get("stream")
+            if stream:
+                stream.put(msg)
+
+        return chat_pb2.MessageResponse(success=True, message="Đã gửi tin nhắn nhóm")
+    
+    def GetGroupChatHistory(self, request, context):
+        if request.group_id not in groups:
+            return chat_pb2.GetGroupChatResponse(messages=[])
+
+        history_msg = read_from_file(f"{request.group_id}.txt", num_lines=request.limit)
+        return chat_pb2.GetGroupChatResponse(messages=history_msg)
+        
+
 
     def GetUserGroups(self, request, context):
         user_groups = [

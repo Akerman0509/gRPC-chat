@@ -81,7 +81,7 @@ class ChatClient:
                     continue
         def receive_messages():
             try:
-                print(f"🔄 Đang kết nối stream...")
+                print(f"🔄 Đã kết nối stream...")
                 # Nhận messages từ server
                 for response in self.stub.MessageStream(request_generator()):
                     # Kiểm tra response có message không
@@ -168,23 +168,34 @@ class ChatClient:
             print(f"👥 Thành viên nhóm với gid: {group_id}:")
             for m in resp.members:
                 print (f" - {m.username} (ID: {m.user_id}) [{m.status}]")
+
+    def join_group(self, group_id):
+        resp = self.stub.JoinGroup(chat_pb2.JoinGroupRequest(user_id=self.user_id, group_id=group_id))
+        print(resp.message)
+    def leave_group(self, group_id):
+        resp = self.stub.LeaveGroup(chat_pb2.LeaveGroupRequest(user_id=self.user_id, group_id=group_id))
+        print(resp.message)
         
-    # -------------------------------
-    # Tham gia nhóm
-    # -------------------------------
-    # def join_group(self, group_id):
-    #     resp = self.stub.JoinGroup(chat_pb2.JoinGroupRequest(user_id=self.user_id, group_id=group_id))
-    #     print(resp.message)
+    def get_group_history(self, group_id, limit=5):
+        resp = self.stub.GetGroupChatHistory(
+            chat_pb2.GetGroupChatRequest(group_id=group_id, limit=limit)
+        )
+        if not resp.messages:
+            print("❌ Không có tin nhắn nào trong nhóm.")
+        else:
+            print(f"🕑 Lịch sử tin nhắn nhóm (Group ID: {group_id}):")
+            for msg in resp.messages:
+                print(f"> {msg}")
 
     # -------------------------------
     # Gửi tin nhắn nhóm
     # -------------------------------
-    # def send_group_message(self, group_id, content):
-    #     resp = self.stub.SendGroupMessage(
-    #         chat_pb2.GroupMessageRequest(sender_id=self.user_id, group_id=group_id, content=content)
-    #     )
-    #     if not resp.success:
-    #         print("❌", resp.message)
+    def send_group_message(self, group_id, content):
+        resp = self.stub.SendGroupMessage(
+            chat_pb2.GroupMessageRequest(sender_id=self.user_id, group_id=group_id, content=content)
+        )
+        if not resp.success:
+            print("❌", resp.message)
 
 
 
@@ -221,17 +232,23 @@ def main():
             
             
     print("\nLệnh có sẵn:")
-    print(" /search <tên>              → Tìm user")
-    print(" /ul                        → Xem danh sách user")
-    print(" /msg <user_id> <nội dung>  → Gửi tin nhắn riêng")
-    print(" /group <tên> <id1,id2,...> → Tạo nhóm")
-    print(" /join <group_id>           → Tham gia nhóm")
-    print(" /groups                    → Xem tất cả nhóm")
-    print(" /sgroup                    → Xem nhóm của bạn")
-    print(" /gmem <group_id>           → Xem thành viên nhóm")
-    
-    print(" /gmsg <group_id> <nội dung>→ Gửi tin nhóm")
-    print(" /exit                      → Thoát")  
+    print(" =================== SEARCH ======================")
+    print(" search <tên>              → Tìm user")
+    print(" ul                        → Xem danh sách user")
+    print(" groups                    → Xem tất cả nhóm")
+    print(" sgroup                    → Xem nhóm của bạn")
+    print(" gmem <group_id>           → Xem thành viên nhóm")
+    print(" =================== MSG =========================")
+    print(" msg <user_id> <nội dung>  → Gửi tin nhắn riêng")
+    print(" gmsg <group_id> <nội dung>→ Gửi tin nhóm")
+    print(" =================== GROUP =======================")
+    print(" group <tên> <id1,id2,...> → Tạo nhóm")
+    print(" join <group_id>           → Tham gia nhóm")
+    print(" leave <group_id>          → Rời nhóm")
+    print(" =================== HISTORY ==================== ")
+    print(" uh <user_id> <lines_num>  → Xem lịch sử tin nhắn riêng")
+    print(" gh <group_id> <lines_num> → Xem lịch sử tin nhắn nhóm")
+    print(" exit                      → Thoát")  
     
     client.start_stream()
 
@@ -243,50 +260,68 @@ def main():
             if not cmd:
                 continue
 
-            if cmd.startswith("/search "):
+            if cmd.startswith("search "):
                 _, query = cmd.split(" ", 1)
                 client.search_user(query)
 
-            elif cmd.startswith("/msg "):
+            elif cmd.startswith("msg "):
                 try:
                     _, uid, msg = cmd.split(" ", 2)
                     client.send_private_message(uid, msg)
                 except ValueError:
-                    print("❌ Sai cú pháp. Ví dụ: /msg user_2 Hello")
+                    print("❌ Sai cú pháp. Ví dụ: msg u2 Hello")
 
-            elif cmd.startswith("/group "):
+            elif cmd.startswith("group "):
                 try:
                     _, name, ids = cmd.split(" ", 2)
                     members = [m.strip() for m in ids.split(",")]
                     client.create_group(name, members)
                 except ValueError:
-                    print("❌ Sai cú pháp. Ví dụ: /group team user_2,user_3")
+                    print("❌ Sai cú pháp. Ví dụ: group team u2,u3")
 
-            elif cmd.startswith("/join "):
+            elif cmd.startswith("join "):
                 _, gid = cmd.split(" ", 1)
                 client.join_group(gid)
 
-            elif cmd == "/groups":
+            elif cmd == "groups":
                 client.get_groups()
                 
-            elif cmd == "/sgroups":
+            elif cmd == "sgroups":
                 client.get_user_groups()
             
-            elif cmd.startswith("/gmem "):
+            elif cmd.startswith("gmem "):
                 _, gid = cmd.split(" ", 1)
                 client.get_group_members(gid)
 
-            elif cmd.startswith("/gmsg "):
+            elif cmd.startswith("gmsg "):
                 try:
                     _, gid, msg = cmd.split(" ", 2)
                     client.send_group_message(gid, msg)
                 except ValueError:
-                    print("❌ Sai cú pháp. Ví dụ: /gmsg group_1 Hello nhóm!")
+                    print("❌ Sai cú pháp. Ví dụ: gmsg g1 Hello nhóm!")
 
-            elif cmd == "/ul":
+            elif cmd == "ul":
                 client.list_users()
+                
+            elif cmd.startswith("leave "):
+                try: 
+                    _, gid = cmd.split(" ", 1)
+                    client.leave_group(gid)
+                   
+                except ValueError:
+                    print("❌ Sai cú pháp. Ví dụ: leave g1")
+                    
+            elif cmd.startswith("gh "):
+                parts = [p.strip() for p in cmd.split(" ")]
+                if len(parts) == 2:
+                    _, gid = parts
+                    client.get_group_history(gid)
+                elif len(parts) == 3:
+                    _, gid, lines_num = parts
+                    lines_num = int(lines_num)
+                    client.get_group_history(gid, limit=lines_num)
 
-            elif cmd == "/exit":
+            elif cmd == "exit":
                 print("👋 Đang thoát...")
                 break
 

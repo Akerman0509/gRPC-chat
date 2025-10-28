@@ -2,9 +2,6 @@ import os
 import sys
 import subprocess
 
-def check_proto_files():
-    """Kiểm tra xem proto files đã được generate chưa"""
-    return os.path.exists('chat_pb2.py') and os.path.exists('chat_pb2_grpc.py')
 
 def build_proto():
     """Generate code từ proto file"""

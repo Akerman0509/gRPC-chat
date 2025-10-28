@@ -17,6 +17,8 @@ service ChatService {
   
   // Tham gia nhóm chat
   rpc JoinGroup(JoinGroupRequest) returns (JoinGroupResponse);
+  // Leave group 
+  rpc LeaveGroup(LeaveGroupRequest) returns (LeaveGroupResponse);
   
   // Gửi tin nhắn trong nhóm
   rpc SendGroupMessage(GroupMessageRequest) returns (MessageResponse);
@@ -37,6 +39,8 @@ service ChatService {
   rpc ListUsers (ListUsersRequest) returns (ListUsersResponse);
   // get all groups
   rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse);
+  // group chat history
+  rpc GetGroupChatHistory (GetGroupChatRequest) returns (GetGroupChatResponse);
 
 }
 
@@ -143,10 +147,28 @@ message JoinGroupResponse {
   string message = 2;
 }
 
+message LeaveGroupRequest {
+  string user_id = 1;
+  string group_id = 2;
+}
+
+message LeaveGroupResponse {
+  bool success = 1;
+  string message = 2;
+}
+
 message GroupMessageRequest {
   string sender_id = 1;
   string group_id = 2;
   string content = 3;
+}
+
+message GetGroupChatRequest {
+  string group_id = 1;
+  int32 limit = 2;
+}
+message GetGroupChatResponse {
+  repeated string messages = 1;
 }
 
 //------------------------SEARCH, GET---------------------------------------

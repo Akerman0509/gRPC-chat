@@ -1,0 +1,16 @@
+Group ID: g1
+Group Name: my
+Creator ID: u1
+Member IDs: u1
+Created At: Tue Oct 28 11:38:28 2025
+============== History ================
+[11:38:34] 1 : hellooo
+[11:38:58] 2 : hellooo2
+[11:39:40] 2 : hellooo2
+[11:39:41] 2 : hellooo2
+[11:39:41] 2 : hellooo2
+[11:39:42] 2 : hellooo2
+[11:39:43] 2 : hellooo2
+[11:39:43] 2 : hellooo2
+[11:39:44] 2 : hellooo2
+[11:39:45] 2 : hellooo2

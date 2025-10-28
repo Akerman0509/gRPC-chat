@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\x12\x04\x63hat\"K\n\x04User\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\t\x12\x10\n\x08password\x18\x04 \x01(\t\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"B\n\rLoginResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"5\n\x0fRegisterRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"E\n\x10RegisterResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"$\n\x10ListUsersRequest\x12\x10\n\x08username\x18\x01 \x01(\t\".\n\x11ListUsersResponse\x12\x19\n\x05users\x18\x01 \x03(\x0b\x32\n.chat.User\"\x96\x01\n\x0b\x43hatMessage\x12\x12\n\nmessage_id\x18\x01 \x01(\t\x12\x11\n\tsender_id\x18\x02 \x01(\t\x12\x13\n\x0bsender_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12\x14\n\x0cmessage_type\x18\x06 \x01(\t\x12\x11\n\ttarget_id\x18\x07 \x01(\t\"P\n\x15PrivateMessageRequest\x12\x11\n\tsender_id\x18\x01 \x01(\t\x12\x13\n\x0breceiver_id\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x03 \x01(\t\"3\n\x0fMessageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"7\n\x14MessageStreamRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x02 \x01(\t\";\n\x15MessageStreamResponse\x12\"\n\x07message\x18\x01 \x01(\x0b\x32\x11.chat.ChatMessage\"i\n\x05Group\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x12\n\ngroup_name\x18\x02 \x01(\t\x12\x12\n\ncreator_id\x18\x03 \x01(\t\x12\x12\n\nmember_ids\x18\x04 \x03(\t\x12\x12\n\ncreated_at\x18\x05 \x01(\x03\"P\n\x12\x43reateGroupRequest\x12\x12\n\ncreator_id\x18\x01 \x01(\t\x12\x12\n\ngroup_name\x18\x02 \x01(\t\x12\x12\n\nmember_ids\x18\x03 \x03(\t\"I\n\x13\x43reateGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"5\n\x10JoinGroupRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\"5\n\x11JoinGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"K\n\x13GroupMessageRequest\x12\x11\n\tsender_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x03 \x01(\t\"4\n\rSearchRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x14\n\x0crequester_id\x18\x02 \x01(\t\"+\n\x0eSearchResponse\x12\x19\n\x05users\x18\x01 \x03(\x0b\x32\n.chat.User\"\x12\n\x10GetGroupsRequest\"0\n\x11GetGroupsResponse\x12\x1b\n\x06groups\x18\x01 \x03(\x0b\x32\x0b.chat.Group\"\'\n\x14GetUserGroupsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"4\n\x15GetUserGroupsResponse\x12\x1b\n\x06groups\x18\x01 \x03(\x0b\x32\x0b.chat.Group\"*\n\x16GetGroupMembersRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\"6\n\x17GetGroupMembersResponse\x12\x1b\n\x07members\x18\x01 \x03(\x0b\x32\n.chat.User2\xb1\x06\n\x0b\x43hatService\x12=\n\x0cRegisterUser\x12\x15.chat.RegisterRequest\x1a\x16.chat.RegisterResponse\x12\x34\n\tLoginUser\x12\x12.chat.LoginRequest\x1a\x13.chat.LoginResponse\x12\x37\n\nSearchUser\x12\x13.chat.SearchRequest\x1a\x14.chat.SearchResponse\x12\x42\n\x0b\x43reateGroup\x12\x18.chat.CreateGroupRequest\x1a\x19.chat.CreateGroupResponse\x12<\n\tJoinGroup\x12\x16.chat.JoinGroupRequest\x1a\x17.chat.JoinGroupResponse\x12\x44\n\x10SendGroupMessage\x12\x19.chat.GroupMessageRequest\x1a\x15.chat.MessageResponse\x12H\n\x12SendPrivateMessage\x12\x1b.chat.PrivateMessageRequest\x1a\x15.chat.MessageResponse\x12L\n\rMessageStream\x12\x1a.chat.MessageStreamRequest\x1a\x1b.chat.MessageStreamResponse(\x01\x30\x01\x12H\n\rGetUserGroups\x12\x1a.chat.GetUserGroupsRequest\x1a\x1b.chat.GetUserGroupsResponse\x12N\n\x0fGetGroupMembers\x12\x1c.chat.GetGroupMembersRequest\x1a\x1d.chat.GetGroupMembersResponse\x12<\n\tListUsers\x12\x16.chat.ListUsersRequest\x1a\x17.chat.ListUsersResponse\x12<\n\tGetGroups\x12\x16.chat.GetGroupsRequest\x1a\x17.chat.GetGroupsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\x12\x04\x63hat\"K\n\x04User\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\t\x12\x10\n\x08password\x18\x04 \x01(\t\"2\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"B\n\rLoginResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"5\n\x0fRegisterRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"E\n\x10RegisterResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"$\n\x10ListUsersRequest\x12\x10\n\x08username\x18\x01 \x01(\t\".\n\x11ListUsersResponse\x12\x19\n\x05users\x18\x01 \x03(\x0b\x32\n.chat.User\"\x96\x01\n\x0b\x43hatMessage\x12\x12\n\nmessage_id\x18\x01 \x01(\t\x12\x11\n\tsender_id\x18\x02 \x01(\t\x12\x13\n\x0bsender_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12\x14\n\x0cmessage_type\x18\x06 \x01(\t\x12\x11\n\ttarget_id\x18\x07 \x01(\t\"P\n\x15PrivateMessageRequest\x12\x11\n\tsender_id\x18\x01 \x01(\t\x12\x13\n\x0breceiver_id\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x03 \x01(\t\"3\n\x0fMessageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"7\n\x14MessageStreamRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x02 \x01(\t\";\n\x15MessageStreamResponse\x12\"\n\x07message\x18\x01 \x01(\x0b\x32\x11.chat.ChatMessage\"i\n\x05Group\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\x12\n\ngroup_name\x18\x02 \x01(\t\x12\x12\n\ncreator_id\x18\x03 \x01(\t\x12\x12\n\nmember_ids\x18\x04 \x03(\t\x12\x12\n\ncreated_at\x18\x05 \x01(\x03\"P\n\x12\x43reateGroupRequest\x12\x12\n\ncreator_id\x18\x01 \x01(\t\x12\x12\n\ngroup_name\x18\x02 \x01(\t\x12\x12\n\nmember_ids\x18\x03 \x03(\t\"I\n\x13\x43reateGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"5\n\x10JoinGroupRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\"5\n\x11JoinGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"6\n\x11LeaveGroupRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\"6\n\x12LeaveGroupResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"K\n\x13GroupMessageRequest\x12\x11\n\tsender_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x03 \x01(\t\"6\n\x13GetGroupChatRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\"(\n\x14GetGroupChatResponse\x12\x10\n\x08messages\x18\x01 \x03(\t\"4\n\rSearchRequest\x12\r\n\x05query\x18\x01 \x01(\t\x12\x14\n\x0crequester_id\x18\x02 \x01(\t\"+\n\x0eSearchResponse\x12\x19\n\x05users\x18\x01 \x03(\x0b\x32\n.chat.User\"\x12\n\x10GetGroupsRequest\"0\n\x11GetGroupsResponse\x12\x1b\n\x06groups\x18\x01 \x03(\x0b\x32\x0b.chat.Group\"\'\n\x14GetUserGroupsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"4\n\x15GetUserGroupsResponse\x12\x1b\n\x06groups\x18\x01 \x03(\x0b\x32\x0b.chat.Group\"*\n\x16GetGroupMembersRequest\x12\x10\n\x08group_id\x18\x01 \x01(\t\"6\n\x17GetGroupMembersResponse\x12\x1b\n\x07members\x18\x01 \x03(\x0b\x32\n.chat.User2\xc0\x07\n\x0b\x43hatService\x12=\n\x0cRegisterUser\x12\x15.chat.RegisterRequest\x1a\x16.chat.RegisterResponse\x12\x34\n\tLoginUser\x12\x12.chat.LoginRequest\x1a\x13.chat.LoginResponse\x12\x37\n\nSearchUser\x12\x13.chat.SearchRequest\x1a\x14.chat.SearchResponse\x12\x42\n\x0b\x43reateGroup\x12\x18.chat.CreateGroupRequest\x1a\x19.chat.CreateGroupResponse\x12<\n\tJoinGroup\x12\x16.chat.JoinGroupRequest\x1a\x17.chat.JoinGroupResponse\x12?\n\nLeaveGroup\x12\x17.chat.LeaveGroupRequest\x1a\x18.chat.LeaveGroupResponse\x12\x44\n\x10SendGroupMessage\x12\x19.chat.GroupMessageRequest\x1a\x15.chat.MessageResponse\x12H\n\x12SendPrivateMessage\x12\x1b.chat.PrivateMessageRequest\x1a\x15.chat.MessageResponse\x12L\n\rMessageStream\x12\x1a.chat.MessageStreamRequest\x1a\x1b.chat.MessageStreamResponse(\x01\x30\x01\x12H\n\rGetUserGroups\x12\x1a.chat.GetUserGroupsRequest\x1a\x1b.chat.GetUserGroupsResponse\x12N\n\x0fGetGroupMembers\x12\x1c.chat.GetGroupMembersRequest\x1a\x1d.chat.GetGroupMembersResponse\x12<\n\tListUsers\x12\x16.chat.ListUsersRequest\x1a\x17.chat.ListUsersResponse\x12<\n\tGetGroups\x12\x16.chat.GetGroupsRequest\x1a\x17.chat.GetGroupsResponse\x12L\n\x13GetGroupChatHistory\x12\x19.chat.GetGroupChatRequest\x1a\x1a.chat.GetGroupChatResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -65,24 +65,32 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_JOINGROUPREQUEST']._serialized_end=1152
   _globals['_JOINGROUPRESPONSE']._serialized_start=1154
   _globals['_JOINGROUPRESPONSE']._serialized_end=1207
-  _globals['_GROUPMESSAGEREQUEST']._serialized_start=1209
-  _globals['_GROUPMESSAGEREQUEST']._serialized_end=1284
-  _globals['_SEARCHREQUEST']._serialized_start=1286
-  _globals['_SEARCHREQUEST']._serialized_end=1338
-  _globals['_SEARCHRESPONSE']._serialized_start=1340
-  _globals['_SEARCHRESPONSE']._serialized_end=1383
-  _globals['_GETGROUPSREQUEST']._serialized_start=1385
-  _globals['_GETGROUPSREQUEST']._serialized_end=1403
-  _globals['_GETGROUPSRESPONSE']._serialized_start=1405
-  _globals['_GETGROUPSRESPONSE']._serialized_end=1453
-  _globals['_GETUSERGROUPSREQUEST']._serialized_start=1455
-  _globals['_GETUSERGROUPSREQUEST']._serialized_end=1494
-  _globals['_GETUSERGROUPSRESPONSE']._serialized_start=1496
-  _globals['_GETUSERGROUPSRESPONSE']._serialized_end=1548
-  _globals['_GETGROUPMEMBERSREQUEST']._serialized_start=1550
-  _globals['_GETGROUPMEMBERSREQUEST']._serialized_end=1592
-  _globals['_GETGROUPMEMBERSRESPONSE']._serialized_start=1594
-  _globals['_GETGROUPMEMBERSRESPONSE']._serialized_end=1648
-  _globals['_CHATSERVICE']._serialized_start=1651
-  _globals['_CHATSERVICE']._serialized_end=2468
+  _globals['_LEAVEGROUPREQUEST']._serialized_start=1209
+  _globals['_LEAVEGROUPREQUEST']._serialized_end=1263
+  _globals['_LEAVEGROUPRESPONSE']._serialized_start=1265
+  _globals['_LEAVEGROUPRESPONSE']._serialized_end=1319
+  _globals['_GROUPMESSAGEREQUEST']._serialized_start=1321
+  _globals['_GROUPMESSAGEREQUEST']._serialized_end=1396
+  _globals['_GETGROUPCHATREQUEST']._serialized_start=1398
+  _globals['_GETGROUPCHATREQUEST']._serialized_end=1452
+  _globals['_GETGROUPCHATRESPONSE']._serialized_start=1454
+  _globals['_GETGROUPCHATRESPONSE']._serialized_end=1494
+  _globals['_SEARCHREQUEST']._serialized_start=1496
+  _globals['_SEARCHREQUEST']._serialized_end=1548
+  _globals['_SEARCHRESPONSE']._serialized_start=1550
+  _globals['_SEARCHRESPONSE']._serialized_end=1593
+  _globals['_GETGROUPSREQUEST']._serialized_start=1595
+  _globals['_GETGROUPSREQUEST']._serialized_end=1613
+  _globals['_GETGROUPSRESPONSE']._serialized_start=1615
+  _globals['_GETGROUPSRESPONSE']._serialized_end=1663
+  _globals['_GETUSERGROUPSREQUEST']._serialized_start=1665
+  _globals['_GETUSERGROUPSREQUEST']._serialized_end=1704
+  _globals['_GETUSERGROUPSRESPONSE']._serialized_start=1706
+  _globals['_GETUSERGROUPSRESPONSE']._serialized_end=1758
+  _globals['_GETGROUPMEMBERSREQUEST']._serialized_start=1760
+  _globals['_GETGROUPMEMBERSREQUEST']._serialized_end=1802
+  _globals['_GETGROUPMEMBERSRESPONSE']._serialized_start=1804
+  _globals['_GETGROUPMEMBERSRESPONSE']._serialized_end=1858
+  _globals['_CHATSERVICE']._serialized_start=1861
+  _globals['_CHATSERVICE']._serialized_end=2821
 # @@protoc_insertion_point(module_scope)
