@@ -24,6 +24,14 @@ messages = []  # Danh sách tất cả tin nhắn gửi trong hệ thống (tu�
 delimiter = "============== History ================"
 lock = threading.Lock()
 
+# logging
+def log_message(message):
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+    log_entry = f"[{timestamp}] {message}"
+    print (log_entry)
+    
+    with open("server.log", "a", encoding="utf-8") as log_file:
+        log_file.write(log_entry + "\n")
 
 # ===============================
 # TRIỂN KHAI SERVICE
@@ -62,7 +70,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                 "status": "online",
                 "stream":queue.Queue()
             }
-        print(f"👤 User đăng ký: {request.username} (id={user_id})")
+        log_message(f"👤 User đăng ký: {request.username} (id={user_id})")
         return chat_pb2.RegisterResponse(success=True, user_id=user_id, message="Đăng ký thành công")
     
     def LoginUser(self, request, context):
@@ -70,7 +78,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             if u["username"] == request.username:
                 if u["password"] == request.password:
                     u["status"] = "online"
-                    print(f"🔐 User đăng nhập: {request.username} (id={uid})")
+                    log_message(f"🔐 User đăng nhập: {request.username} (id={uid})")
                     return chat_pb2.LoginResponse(success=True, user_id=uid, message="Đăng nhập thành công")
                 else:
                     return chat_pb2.LoginResponse(success=False, user_id="", message="Mật khẩu không đúng")
@@ -86,7 +94,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             )
             for uid, data in users.items()
         ]
-        print(f"👥 Có {len(user_list)} người dùng trong hệ thống.")
+        log_message(f"👥 Có {len(user_list)} người dùng trong hệ thống.")
         return chat_pb2.ListUsersResponse(users=user_list)
 
     def SearchUser(self, request, context):
@@ -96,7 +104,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             for uid, u in users.items()
             if query in u["username"].lower() and uid != request.requester_id
         ]
-        print(f"🔍 {request.requester_id} tìm: '{request.query}', thấy {len(matched_users)} kết quả")
+        log_message(f"🔍 {request.requester_id} tìm: '{request.query}', thấy {len(matched_users)} kết quả")
         return chat_pb2.SearchResponse(users=matched_users)
     
     def SendPrivateMessage(self, request, context):
@@ -119,7 +127,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                 f.write(f"{delimiter}\n")
         append_to_file(file_name, msg)
         
-        print(f"💌 Tin nhắn riêng từ {request.sender_id} → {request.receiver_id}: {request.content}")
+        log_message(f"💌 Tin nhắn riêng từ {request.sender_id} → {request.receiver_id}: {request.content}")
 
         # Gửi tin cho người nhận nếu đang online
         stream = users[request.receiver_id].get("stream")
@@ -128,12 +136,12 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             stream.put(msg)
         # if stream:
         #     items = list(stream.queue)  # ⚠️ dùng thuộc tính nội bộ .queue
-        #     print(f"📦 Queue hiện có {len(items)} phần tử:")
+        #     log_message(f"📦 Queue hiện có {len(items)} phần tử:")
         #     for i, item in enumerate(items, 1):
-        #         print(f"  {i}. {item}")
+        #         log_message(f"  {i}. {item}")
         # else :
-        #     print("🚫 Không có stream cho người nhận")
-        # print (users[request.receiver_id])
+        #     log_message("🚫 Không có stream cho người nhận")
+        # log_message (users[request.receiver_id])
 
         return chat_pb2.MessageResponse(success=True, message="Đã gửi tin nhắn riêng")
     
@@ -145,6 +153,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             return chat_pb2.GetPrivateChatResponse(messages=[])
 
         history_msg = read_from_file(file_name, num_lines=request.limit)
+        log_message (f"🕵️ Lịch sử chat riêng giữa {request.sender_id} và {request.receiver_id}, lấy {len(history_msg)} tin nhắn")
         return chat_pb2.GetPrivateChatResponse(messages=history_msg)
 
     # -------------------------------
@@ -159,7 +168,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                 "member_ids": list(set(request.member_ids) | {request.creator_id}),
                 "created_at": int(time.time())
             }
-        print(f"👥 Nhóm mới: {request.group_name} (id={group_id}), (creator_id: {request.creator_id})")
+        log_message(f"👥 Nhóm mới: {request.group_name} (id={group_id}), (creator_id: {request.creator_id})")
         # create txt file with gid name
         with open(f"history/{group_id}.txt", "w", encoding="utf-8") as f:
             f.write(f"Group ID: {group_id}\n")
@@ -183,7 +192,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             )
             for g_id, g in groups.items()
         ]
-        print(f"👥 Có {len(group_list)} nhóm trong hệ thống.")
+        log_message(f"👥 Có {len(group_list)} nhóm trong hệ thống.")
         return chat_pb2.GetGroupsResponse(groups=group_list)
 
     def JoinGroup(self, request, context):
@@ -194,7 +203,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         with lock:
             if request.user_id not in group["member_ids"]:
                 group["member_ids"].append(request.user_id)
-        print(f"✅ {request.user_id} tham gia nhóm {request.group_id}")
+        log_message(f"✅ {request.user_id} tham gia nhóm {request.group_id}")
         return chat_pb2.JoinGroupResponse(success=True, message="Tham gia nhóm thành công")
     
     def LeaveGroup(self, request, context):
@@ -205,12 +214,17 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         with lock:
             if request.user_id in group["member_ids"]:
                 group["member_ids"].remove(request.user_id)
-        print(f"❌ {request.user_id} rời nhóm {request.group_id}")
+        log_message(f"❌ {request.user_id} rời nhóm {request.group_id}")
         return chat_pb2.LeaveGroupResponse(success=True, message="Rời nhóm thành công")
 
     def SendGroupMessage(self, request, context):
         if request.group_id not in groups:
+            log_message (f"❌ Nhóm {request.group_id} không tồn tại")
             return chat_pb2.MessageResponse(success=False, message="Nhóm không tồn tại")
+        
+        if request.sender_id not in groups[request.group_id]["member_ids"]:
+            log_message (f"❌ {request.sender_id} không phải thành viên nhóm {request.group_id}")
+            return chat_pb2.MessageResponse(success=False, message="Bạn không phải thành viên nhóm")
 
         msg = chat_pb2.ChatMessage(
             message_id=f"msg_{len(messages) + 1}",
@@ -224,7 +238,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         messages.append(msg)
         append_to_file(f"history/{request.group_id}.txt", msg)
         
-        print(f"💬 Tin nhắn nhóm [{request.group_id}] từ {request.sender_id}: {request.content}")
+        log_message(f"💬 Tin nhắn nhóm [{request.group_id}] từ {request.sender_id}: {request.content}")
 
         # Gửi tin nhắn cho các thành viên online
         for uid in groups[request.group_id]["member_ids"]:
@@ -238,9 +252,11 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
     
     def GetGroupChatHistory(self, request, context):
         if request.group_id not in groups:
+            log_message (f"❌ Nhóm {request.group_id} không tồn tại")
             return chat_pb2.GetGroupChatResponse(messages=[])
 
         history_msg = read_from_file(f"history/{request.group_id}.txt", num_lines=request.limit)
+        log_message (f"🕵️ Lịch sử chat nhóm {request.group_id}, lấy {len(history_msg)} tin nhắn")
         return chat_pb2.GetGroupChatResponse(messages=history_msg)
         
 
@@ -257,7 +273,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             for g_id, g in groups.items()
             if request.user_id in g["member_ids"]
         ]
-        print(f"📂 {request.user_id} có {len(user_groups)} nhóm")
+        log_message(f"📂 {request.user_id} có {len(user_groups)} nhóm")
         return chat_pb2.GetUserGroupsResponse(groups=user_groups)
 
     def GetGroupMembers(self, request, context):
@@ -268,6 +284,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             chat_pb2.User(user_id=uid, username=users[uid]["username"], status=users[uid]["status"])
             for uid in group["member_ids"] if uid in users
         ]
+        log_message (f"👥 Nhóm {request.group_id} có {len(members)} thành viên")
         return chat_pb2.GetGroupMembersResponse(members=members)
 
 
@@ -277,7 +294,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         try:
             for req in request_iterator:
                 user_id = req.user_id
-                # print (f"📨 Yêu cầu stream từ {user_id}: {req.action}")
+                # log_message (f"📨 Yêu cầu stream từ {user_id}: {req.action}")
                 if req.action == "connect":
                     users[user_id]["status"] = "online"
                     while not users[user_id]["stream"].empty():
@@ -285,14 +302,14 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                         yield chat_pb2.MessageStreamResponse(message=msg)
                 else: 
                     users[user_id]["status"] = "offline"
-                    print(f"❎ {user_id} stream đóng")
+                    log_message(f"❎ {user_id} stream đóng")
 
         except grpc.RpcError as e:
-            print(f"⚠️ Stream lỗi: {e}")
+            log_message(f"⚠️ Stream lỗi: {e}")
         finally:
             if user_id and user_id in users:
                 users[user_id]["status"] = "offline"
-                print(f"❎ {user_id} stream đóng")
+                log_message(f"❎ {user_id} stream đóng")
 
 
 def clear_history_files():
@@ -303,9 +320,9 @@ def clear_history_files():
             try:
                 if os.path.isfile(file_path):
                     os.remove(file_path)
-                    print(f"🗑️ Xoá file lịch sử: {file_path}")
+                    log_message(f"🗑️ Xoá file lịch sử: {file_path}")
             except Exception as e:
-                print(f"❌ Lỗi khi xoá file {file_path}: {e}")
+                log_message(f"❌ Lỗi khi xoá file {file_path}: {e}")
 # ===============================
 # HÀM KHỞI CHẠY SERVER
 # ===============================
@@ -314,11 +331,11 @@ def serve():
     chat_pb2_grpc.add_ChatServiceServicer_to_server(ChatService(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
-    print("🚀 Chat server đang chạy trên cổng 50051...")
+    log_message("🚀 Chat server đang chạy trên cổng 50051...")
     try:
         while True:
             time.sleep(86400)
     except KeyboardInterrupt:
-        print("🛑 Đang tắt server...")
+        log_message("🛑 Đang tắt server...")
         clear_history_files()
         server.stop(0)

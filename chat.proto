@@ -80,7 +80,7 @@ message RegisterResponse {
 }
 
 message ListUsersRequest {
-  string username = 1;
+  
 }
 
 message ListUsersResponse {
