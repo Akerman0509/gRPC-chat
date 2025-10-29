@@ -41,6 +41,8 @@ service ChatService {
   rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse);
   // group chat history
   rpc GetGroupChatHistory (GetGroupChatRequest) returns (GetGroupChatResponse);
+  // private chat history
+  rpc GetPrivateChatHistory (GetPrivateChatRequest) returns (GetPrivateChatResponse);
 
 }
 
@@ -114,6 +116,15 @@ message MessageStreamRequest {
 
 message MessageStreamResponse {
   ChatMessage message = 1;
+}
+
+message GetPrivateChatRequest {
+  string sender_id = 1;
+  string receiver_id = 2;
+  int32 limit = 3;
+}
+message GetPrivateChatResponse {
+  repeated string messages = 1;
 }
 
 //------------------------GROUP---------------------------------------

@@ -2,6 +2,7 @@ import time
 import threading
 import grpc
 import queue
+import os
 
 from concurrent import futures
 import chat_pb2
@@ -112,6 +113,12 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             target_id=request.receiver_id
         )
         messages.append(msg)
+        file_name = f"history/{'_'.join(sorted([request.sender_id, request.receiver_id]))}.txt"
+        if not os.path.exists(file_name):
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(f"{delimiter}\n")
+        append_to_file(file_name, msg)
+        
         print(f"💌 Tin nhắn riêng từ {request.sender_id} → {request.receiver_id}: {request.content}")
 
         # Gửi tin cho người nhận nếu đang online
@@ -119,18 +126,26 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         
         if stream:
             stream.put(msg)
-
-        if stream:
-            items = list(stream.queue)  # ⚠️ dùng thuộc tính nội bộ .queue
-            print(f"📦 Queue hiện có {len(items)} phần tử:")
-            for i, item in enumerate(items, 1):
-                print(f"  {i}. {item}")
-        else :
-            print("🚫 Không có stream cho người nhận")
-            
-        print (users[request.receiver_id])
+        # if stream:
+        #     items = list(stream.queue)  # ⚠️ dùng thuộc tính nội bộ .queue
+        #     print(f"📦 Queue hiện có {len(items)} phần tử:")
+        #     for i, item in enumerate(items, 1):
+        #         print(f"  {i}. {item}")
+        # else :
+        #     print("🚫 Không có stream cho người nhận")
+        # print (users[request.receiver_id])
 
         return chat_pb2.MessageResponse(success=True, message="Đã gửi tin nhắn riêng")
+    
+    def GetPrivateChatHistory(self, request, context):
+        file_name = f"history/{'_'.join(sorted([request.sender_id, request.receiver_id]))}.txt"
+        if not os.path.exists(file_name):
+            return chat_pb2.GetPrivateChatResponse(messages=[])
+        if request.sender_id not in users or request.receiver_id not in users:
+            return chat_pb2.GetPrivateChatResponse(messages=[])
+
+        history_msg = read_from_file(file_name, num_lines=request.limit)
+        return chat_pb2.GetPrivateChatResponse(messages=history_msg)
 
     # -------------------------------
     # GROUP FUNCTIONS
@@ -144,9 +159,9 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                 "member_ids": list(set(request.member_ids) | {request.creator_id}),
                 "created_at": int(time.time())
             }
-        print(f"👥 Nhóm mới: {request.group_name} (id={group_id}), (creator_id: {request.creator_id}")
+        print(f"👥 Nhóm mới: {request.group_name} (id={group_id}), (creator_id: {request.creator_id})")
         # create txt file with gid name
-        with open(f"{group_id}.txt", "w", encoding="utf-8") as f:
+        with open(f"history/{group_id}.txt", "w", encoding="utf-8") as f:
             f.write(f"Group ID: {group_id}\n")
             f.write(f"Group Name: {request.group_name}\n")
             f.write(f"Creator ID: {request.creator_id}\n")
@@ -207,7 +222,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             target_id=request.group_id
         )
         messages.append(msg)
-        append_to_file(f"{request.group_id}.txt", msg)
+        append_to_file(f"history/{request.group_id}.txt", msg)
         
         print(f"💬 Tin nhắn nhóm [{request.group_id}] từ {request.sender_id}: {request.content}")
 
@@ -225,7 +240,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         if request.group_id not in groups:
             return chat_pb2.GetGroupChatResponse(messages=[])
 
-        history_msg = read_from_file(f"{request.group_id}.txt", num_lines=request.limit)
+        history_msg = read_from_file(f"history/{request.group_id}.txt", num_lines=request.limit)
         return chat_pb2.GetGroupChatResponse(messages=history_msg)
         
 
@@ -280,7 +295,17 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
                 print(f"❎ {user_id} stream đóng")
 
 
-
+def clear_history_files():
+    history_dir = "history"
+    if os.path.exists(history_dir):
+        for filename in os.listdir(history_dir):
+            file_path = os.path.join(history_dir, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                    print(f"🗑️ Xoá file lịch sử: {file_path}")
+            except Exception as e:
+                print(f"❌ Lỗi khi xoá file {file_path}: {e}")
 # ===============================
 # HÀM KHỞI CHẠY SERVER
 # ===============================
@@ -295,4 +320,5 @@ def serve():
             time.sleep(86400)
     except KeyboardInterrupt:
         print("🛑 Đang tắt server...")
+        clear_history_files()
         server.stop(0)

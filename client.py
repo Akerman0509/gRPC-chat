@@ -66,6 +66,18 @@ class ChatClient:
         )
         if not resp.success:
             print("❌", resp.message)
+            
+    def get_private_history(self, receiver_id, limit=5):
+        resp = self.stub.GetPrivateChatHistory(
+            chat_pb2.GetPrivateChatRequest(sender_id =self.user_id,receiver_id = receiver_id , limit=limit)
+        )
+        if not resp.messages:
+            print("❌ Không có tin nhắn nào trong cuộc trò chuyện.")
+        else:
+            print(f"🕑 Lịch sử tin nhắn trực tiếp với user (User ID: {receiver_id}):")
+            for msg in resp.messages:
+                print(f"> {msg}")
+
     # -------------------------------
     # Mở stream nhận tin nhắn realtime
     # -------------------------------
@@ -94,7 +106,8 @@ class ChatClient:
                     
                     # Hiển thị message theo loại
                     if msg.message_type == "group":
-                        print(f"\n📢 [{timestamp}] [Group] {msg.sender_name}: {msg.content}")
+                        
+                        print(f"\n📢 [{timestamp}] [Group {msg.target_id}] {msg.sender_name}: {msg.content}")
                     else:
                         print(f"\n💬 [{timestamp}] [Private] {msg.sender_name}: {msg.content}")
                     
@@ -320,6 +333,16 @@ def main():
                     _, gid, lines_num = parts
                     lines_num = int(lines_num)
                     client.get_group_history(gid, limit=lines_num)
+
+            elif cmd.startswith("uh "):
+                parts = [p.strip() for p in cmd.split(" ")]
+                if len(parts) == 2:
+                    _, uid = parts
+                    client.get_private_history(uid)
+                elif len(parts) == 3:
+                    _, uid, lines_num = parts
+                    lines_num = int(lines_num)
+                    client.get_private_history(uid, limit=lines_num)
 
             elif cmd == "exit":
                 print("👋 Đang thoát...")
