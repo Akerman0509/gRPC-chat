@@ -3,6 +3,8 @@
 
 Đây là một dự án mô phỏng ứng dụng chat sử dụng kiến trúc **Client-Server**, cho phép nhiều người dùng kết nối, giao tiếp riêng tư (P2P) hoặc trò chuyện trong các nhóm công cộng/riêng tư. Hệ thống được thiết kế để xử lý việc đăng ký người dùng, quản lý nhóm và chuyển tiếp tin nhắn (forwarding) thông qua máy chủ trung tâm.
 
+Công nghệ chính được sử dụng trong dự án này là **gRPC** để xây dựng giao thức giao tiếp hiệu quả giữa Client và Server, cùng với **Python** cho việc triển khai logic ứng dụng.
+
 ## Sơ đồ giao tiếp 
 ![gRPC chat architecture](diagram.png)
 

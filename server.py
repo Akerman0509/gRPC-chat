@@ -8,12 +8,6 @@ from concurrent import futures
 import chat_pb2
 import chat_pb2_grpc
 
-# from typing import TypedDict
-
-# class myClass (TypedDict):
-#     tmp: int 
-
-# a : myClass = {"tmp"}
 
 # ===============================
 # DỮ LIỆU LƯU TẠM TRONG BỘ NHỚ
@@ -170,6 +164,10 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             }
         log_message(f"👥 Nhóm mới: {request.group_name} (id={group_id}), (creator_id: {request.creator_id})")
         # create txt file with gid name
+        if not os.path.exists("history"):
+            os.makedirs("history")
+
+        
         with open(f"history/{group_id}.txt", "w", encoding="utf-8") as f:
             f.write(f"Group ID: {group_id}\n")
             f.write(f"Group Name: {request.group_name}\n")

@@ -211,10 +211,6 @@ class ChatClient:
             print("❌", resp.message)
 
 
-
-
-
-
 def main():
     print("=" * 50)
     print("💬 CHAT CLIENT (gRPC)")
